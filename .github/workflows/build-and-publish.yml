@@ -1,0 +1,108 @@
+name: Build and Publish
+run-name: Build and publish Docker image for ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref_name }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Ref to build'
+        required: true
+      base:
+        description: 'Base image (debian or alpine)'
+        required: false
+        default: 'debian'
+        type: choice
+        options:
+          - debian
+          - alpine
+  push:
+    tags:
+      - '*'
+
+env:
+  REGISTRY_IMAGE: ghcr.io/${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref_name }}
+          fetch-depth: 0
+
+      - name: Extract version from ref
+        id: version
+        run: |
+          REF="${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref_name }}"
+          # Remove 'v' prefix if present and any suffix after dash
+          VERSION=$(echo "$REF" | sed 's/^v//' | sed 's/-.*//')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Building version: $VERSION"
+
+      - name: Checkout HedgeDoc container repository
+        uses: actions/checkout@v4
+        with:
+          repository: hedgedoc/container
+          ref: release/${{ steps.version.outputs.version }}
+          path: container
+          fetch-depth: 1
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY_IMAGE }}
+          tags: |
+            type=ref,event=tag
+            type=raw,value=${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref_name }}
+            type=raw,value=${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref_name }}-${{ github.event.inputs.base || 'debian' }}
+            type=raw,value=${{ github.event.inputs.base || 'debian' }}
+            type=sha,prefix=
+
+      - name: Set main flavor tags
+        id: tags
+        run: |
+          BASE="${{ github.event.inputs.base || 'debian' }}"
+          TAGS="${{ steps.meta.outputs.tags }}"
+          
+          # If debian, add version and latest tags without base suffix
+          if [ "$BASE" = "debian" ]; then
+            TAGS="$TAGS,${{ env.REGISTRY_IMAGE }}:${{ steps.version.outputs.version }},${{ env.REGISTRY_IMAGE }}:latest"
+          fi
+          
+          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: container
+          file: ./container/${{ github.event.inputs.base || 'debian' }}/Dockerfile
+          build-args: |
+            VERSION=${{ steps.version.outputs.version }}
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Inspect image
+        run: |
+          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref_name }}
