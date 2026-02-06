@@ -1,7 +1,7 @@
-From d705e93f6567e88c931942f73d3b06694802c6e7 Mon Sep 17 00:00:00 2001
+From 96c18ba25f79c14d40be59aa268e87dd80f8280a Mon Sep 17 00:00:00 2001
 From: Bart van der Braak <bart@vanderbraak.nl>
 Date: Fri, 6 Feb 2026 12:27:23 +0100
-Subject: [PATCH 3/3] BLENDER: Fix OAuth2 errors resulting in Server Error
+Subject: [PATCH 2/4] BLENDER: Fix OAuth2 errors resulting in Server Error
 
 ---
  lib/web/auth/oauth2/index.js | 88 ++++++++++++++++++++++--------------
