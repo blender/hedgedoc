@@ -1,0 +1,154 @@
+From 6d693deba4b8469dd73358ebb9ae618908b7efdd Mon Sep 17 00:00:00 2001
+From: Bart van der Braak <bart@vanderbraak.nl>
+Date: Fri, 6 Feb 2026 12:27:23 +0100
+Subject: [PATCH] BLENDER: fix: prevent double callback in OAuth2 authorization
+ failure
+
+When a user lacks the required role, checkAuthorization was calling
+done() but not stopping execution, causing the userProfile method to
+call done() again. This resulted in "ERR_HTTP_HEADERS_SENT" errors.
+
+Added early returns in checkAuthorization and checked its return value
+before continuing profile parsing.
+---
+ lib/web/auth/oauth2/index.js | 97 +++++++++++++++++++++++-------------
+ 1 file changed, 63 insertions(+), 34 deletions(-)
+
+diff --git a/lib/web/auth/oauth2/index.js b/lib/web/auth/oauth2/index.js
+index 0ce38ddef..ccc084d1a 100644
+--- a/lib/web/auth/oauth2/index.js
++++ b/lib/web/auth/oauth2/index.js
+@@ -32,11 +32,40 @@ class OAuth2CustomStrategy extends Strategy {
+         return done(new Error('Failed to parse user profile'))
+       }
+ 
+-      checkAuthorization(json, done)
++      // Check authorization
++      if (config.oauth2.accessRole) {
++        if (!config.oauth2.rolesClaim) {
++          logger.error('oauth2: "accessRole" is configured, but "rolesClaim" is missing from the config. Can\'t check group membership!')
++        } else {
++          let roles = []
++          try {
++            roles = extractProfileAttribute(json, config.oauth2.rolesClaim)
++          } catch (err) {
++            logger.warn(`oauth2: failed to extract rolesClaim '${config.oauth2.rolesClaim}' from user profile.`)
++            const authError = new Error('Permission denied: missing roles claim')
++            authError.status = 403
++            return done(authError)
++          }
++          if (!roles) {
++            logger.error('oauth2: "accessRole" is configured, but user profile doesn\'t contain roles attribute. Permission denied')
++            const authError = new Error('Permission denied: no roles found')
++            authError.status = 403
++            return done(authError)
++          }
++          if (!roles.includes(config.oauth2.accessRole)) {
++            const username = extractProfileAttribute(json, config.oauth2.userProfileUsernameAttr)
++            logger.debug(`oauth2: user "${username}" doesn't have the required role. Permission denied`)
++            const authError = new Error('Permission denied: insufficient privileges')
++            authError.status = 403
++            return done(authError)
++          }
++        }
++      }
++
+       try {
+         profile = parseProfile(json)
+       } catch (ex) {
+-        return done('Failed to identify user profile information', null)
++        return done(new Error('Failed to identify user profile information'))
+       }
+       profile.provider = 'oauth2'
+ 
+@@ -75,35 +104,6 @@ function parseProfile (data) {
+   }
+ }
+ 
+-function checkAuthorization (data, done) {
+-  // a role the user must have is set in the config
+-  if (config.oauth2.accessRole) {
+-    // check if we know which claim contains the list of groups a user is in
+-    if (!config.oauth2.rolesClaim) {
+-      // log error, but accept all logins
+-      logger.error('oauth2: "accessRole" is configured, but "rolesClaim" is missing from the config. Can\'t check group membership!')
+-    } else {
+-      // parse and check role data
+-      let roles = []
+-      try {
+-        roles = extractProfileAttribute(data, config.oauth2.rolesClaim)
+-      } catch (err) {
+-        logger.warn(`oauth2: failed to extract rolesClaim '${config.oauth2.rolesClaim}' from user profile.`)
+-        return done('Permission denied', null)
+-      }
+-      if (!roles) {
+-        logger.error('oauth2: "accessRole" is configured, but user profile doesn\'t contain roles attribute. Permission denied')
+-        return done('Permission denied', null)
+-      }
+-      if (!roles.includes(config.oauth2.accessRole)) {
+-        const username = extractProfileAttribute(data, config.oauth2.userProfileUsernameAttr)
+-        logger.debug(`oauth2: user "${username}" doesn't have the required role. Permission denied`)
+-        return done('Permission denied', null)
+-      }
+-    }
+-  }
+-}
+-
+ OAuth2CustomStrategy.prototype.userProfile = function (accessToken, done) {
+   this._oauth2.get(this._userProfileURL, accessToken, function (err, body, res) {
+     let json, profile
+@@ -118,11 +118,40 @@ OAuth2CustomStrategy.prototype.userProfile = function (accessToken, done) {
+       return done(new Error('Failed to parse user profile'))
+     }
+ 
+-    checkAuthorization(json, done)
++    // Check authorization
++    if (config.oauth2.accessRole) {
++      if (!config.oauth2.rolesClaim) {
++        logger.error('oauth2: "accessRole" is configured, but "rolesClaim" is missing from the config. Can\'t check group membership!')
++      } else {
++        let roles = []
++        try {
++          roles = extractProfileAttribute(json, config.oauth2.rolesClaim)
++        } catch (err) {
++          logger.warn(`oauth2: failed to extract rolesClaim '${config.oauth2.rolesClaim}' from user profile.`)
++          const authError = new Error('Permission denied: missing roles claim')
++          authError.status = 403
++          return done(authError)
++        }
++        if (!roles) {
++          logger.error('oauth2: "accessRole" is configured, but user profile doesn\'t contain roles attribute. Permission denied')
++          const authError = new Error('Permission denied: no roles found')
++          authError.status = 403
++          return done(authError)
++        }
++        if (!roles.includes(config.oauth2.accessRole)) {
++          const username = extractProfileAttribute(json, config.oauth2.userProfileUsernameAttr)
++          logger.debug(`oauth2: user "${username}" doesn't have the required role. Permission denied`)
++          const authError = new Error('Permission denied: insufficient privileges')
++          authError.status = 403
++          return done(authError)
++        }
++      }
++    }
++
+     try {
+       profile = parseProfile(json)
+     } catch (ex) {
+-      return done('Failed to identify user profile information', null)
++      return done(new Error('Failed to identify user profile information'))
+     }
+     profile.provider = 'oauth2'
+ 
+@@ -146,7 +175,7 @@ oauth2Auth.get('/auth/oauth2', function (req, res, next) {
+   passport.authenticate('oauth2')(req, res, next)
+ })
+ 
+-// github auth callback
++// oauth2 auth callback
+ oauth2Auth.get('/auth/oauth2/callback',
+   passport.authenticate('oauth2', {
+     successReturnToOrRedirect: config.serverURL + '/',
+-- 
+2.49.0
+
