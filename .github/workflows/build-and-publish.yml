@@ -30,12 +30,6 @@ jobs:
       packages: write
       id-token: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref_name }}
-          fetch-depth: 0
-
       - name: Extract version from ref
         id: version
         run: |
@@ -50,7 +44,6 @@ jobs:
         with:
           repository: hedgedoc/container
           ref: release/${{ steps.version.outputs.version }}
-          path: container
           fetch-depth: 1
 
       - name: Set up Docker Buildx
@@ -84,8 +77,8 @@ jobs:
           # If debian, add version and latest tags without base suffix
           if [ "$BASE" = "debian" ]; then
             TAGS="$TAGS
-          ${{ env.REGISTRY_IMAGE }}:${{ steps.version.outputs.version }}
-          ${{ env.REGISTRY_IMAGE }}:latest"
+            ${{ env.REGISTRY_IMAGE }}:${{ steps.version.outputs.version }}
+            ${{ env.REGISTRY_IMAGE }}:latest"
           fi
           
           # Use multi-line output format
@@ -96,10 +89,11 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
-          context: container
-          file: ./container/${{ github.event.inputs.base || 'debian' }}/Dockerfile
+          context: .
+          file: ./${{ github.event.inputs.base || 'debian' }}/Dockerfile
           build-args: |
-            VERSION=${{ steps.version.outputs.version }}
+            VERSION=${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref_name }}
+            HEDGEDOC_REPOSITORY=https://github.com/${{ github.repository }}.git
           platforms: linux/amd64
           push: true
           tags: ${{ steps.tags.outputs.tags }}
