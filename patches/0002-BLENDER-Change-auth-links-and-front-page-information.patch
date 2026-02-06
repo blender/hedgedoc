@@ -1,14 +1,14 @@
-From aa288a14e947f6baa61a10b39c34c562aae338b1 Mon Sep 17 00:00:00 2001
+From f06926fdc15a93909257a7a317f70fc8f126eab4 Mon Sep 17 00:00:00 2001
 From: Bart van der Braak <bart@vanderbraak.nl>
 Date: Fri, 6 Feb 2026 17:21:23 +0100
-Subject: [PATCH] BLENDER: Change auth links and front page information
+Subject: [PATCH 2/3] BLENDER: Change auth links and front page information
 
 ---
  public/views/index/body.ejs | 21 +++++++++++++--------
  1 file changed, 13 insertions(+), 8 deletions(-)
 
 diff --git a/public/views/index/body.ejs b/public/views/index/body.ejs
-index b2cbeff71..58a42c7d6 100644
+index b2cbeff71..e39749a8f 100644
 --- a/public/views/index/body.ejs
 +++ b/public/views/index/body.ejs
 @@ -15,9 +15,9 @@
@@ -53,7 +53,7 @@ index b2cbeff71..58a42c7d6 100644
 +                    <span>Viewing notes can be done anonymously, creating and editing requires a Blender ID with a certain role. </span>
 +                    <br>
 +                    <br>
-+                    <span class="small">If you are getting forbidden errors and are supposed to be part of the collaborator group, contact your module owner or ask around in <a href="https://matrix.to/#/#devops:blender.org?web-instance[element.io]=chat.blender.org">#devops:blender.org</a> on Matrix.</span>
++                    <span class="small">If you are getting forbidden errors and are supposed to be part of the collaborator group, contact your Module owner or ask around in <a href="https://matrix.to/#/#devops:blender.org?web-instance[element.io]=chat.blender.org">#devops:blender.org</a> on Matrix.</span>
 +
 +                    <span><img src="<%- serverURL %>/screenshot.png" class="screenshot ui-signin"></span>
                      <div class="lead row" style="width: 90%; margin: 0 auto;">
