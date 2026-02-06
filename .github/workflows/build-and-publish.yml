@@ -53,9 +53,6 @@ jobs:
           path: container
           fetch-depth: 1
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -86,10 +83,15 @@ jobs:
           
           # If debian, add version and latest tags without base suffix
           if [ "$BASE" = "debian" ]; then
-            TAGS="$TAGS,${{ env.REGISTRY_IMAGE }}:${{ steps.version.outputs.version }},${{ env.REGISTRY_IMAGE }}:latest"
+            TAGS="$TAGS
+          ${{ env.REGISTRY_IMAGE }}:${{ steps.version.outputs.version }}
+          ${{ env.REGISTRY_IMAGE }}:latest"
           fi
           
-          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+          # Use multi-line output format
+          echo "tags<<EOF" >> $GITHUB_OUTPUT
+          echo "$TAGS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Build and push image
         uses: docker/build-push-action@v6
