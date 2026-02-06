@@ -15,9 +15,9 @@
                                 <% if (allowAnonymous && !disableNoteCreation) { %>
                                 <a type="button" href="<%- serverURL %>/new" class="btn btn-sm btn-primary"><i class="fa fa-plus"></i> <%= __('New guest note') %></a>
                                 <% } %>
-                                <% if (authProviders.facebook || authProviders.twitter || authProviders.github || authProviders.gitlab || authProviders.mattermost || authProviders.dropbox || authProviders.google || authProviders.ldap || authProviders.saml || authProviders.oauth2 || authProviders.email) { %>
-                                <button class="btn btn-sm btn-success ui-signin" data-toggle="modal" data-target=".signin-modal"><%= __('Sign In') %></button>
-                                <% } %>
+                                <a href="<%- serverURL %>/auth/oauth2" class="btn btn-sm btn-success ui-signin">
+                                    <i class="fa fa-mail-forward"></i> <%= __('Sign in via %s', authProviders.oauth2ProviderName || 'OAuth2') %>
+                                </a>
                             </div>
                             <div class="ui-signout" style="float: right; margin-top: 8px;<% if(!signin) { %> display: none;<% } %>">
                                 <% if (!disableNoteCreation) { %>
@@ -45,7 +45,7 @@
                     <h1 class="cover-heading">
                         <img src="https://download.blender.org/branding/blender_logo_socket.png" width="400" alt="HedgeDoc logo"></h1>
                     <p class="lead">
-                        Ideas grow better together
+                        Collaborative notes for Blender development
                     </p>
                     <% if (infoMessage && infoMessage.length > 0) { %>
                     <div class="alert alert-info" style="max-width: 400px; margin: 0 auto;"><%= infoMessage %></div>
@@ -56,16 +56,23 @@
                     <% if (authProviders.facebook || authProviders.twitter || authProviders.github || authProviders.gitlab || authProviders.mattermost || authProviders.dropbox || authProviders.google || authProviders.ldap || authProviders.saml || authProviders.oauth2 || authProviders.email) { %>
                     <span class="ui-signin">
                         <br>
-                        <a type="button" class="btn btn-lg btn-success ui-signin" data-toggle="modal" data-target=".signin-modal" style="min-width: 200px;"><%= __('Sign In') %></a>
+                        <a href="<%- serverURL %>/auth/oauth2" type="button" class="btn btn-lg btn-success ui-signin" style="min-width: 200px;"><%= __('Sign in via %s', authProviders.oauth2ProviderName || 'OAuth2') %></a>
                     </span>
                     <span class="ui-or"><%= __('or') %></span>
                     <% } %>
                     <span class="ui-signin">
                         <a type="button" href="<%- serverURL %>/features" class="btn btn-lg btn-primary" style="min-width: 200px;"><%= __('Explore all features') %></a>
-                        <br>
-                        <br>
-                        <img src="<%- serverURL %>/screenshot.png" class="screenshot ui-signin">
+                    <br><br>
+                    <span>
+                    Viewing notes is public. Creating and editing require a Blender ID with the appropriate role.
                     </span>
+                    <br><br>
+                    <span class="small">
+                    Getting a permission error? If you think you should have access, ask your module owner or check with
+                    <a href="https://matrix.to/#/#devops:blender.org?web-instance[element.io]=chat.blender.org">#devops:blender.org</a>
+                    on Matrix.
+                    </span>
+                    <span><img src="<%- serverURL %>/screenshot.png" class="screenshot ui-signin"></span>
                     <div class="lead row" style="width: 90%; margin: 0 auto;">
                         <div class="col-md-4 inner">
                             <a href="<%- serverURL %>/features#Share-Notes">
