@@ -16,7 +16,6 @@
     <link rel="icon" type="image/png" sizes="32x32" href="{{{url}}}/icons/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="{{{url}}}/icons/favicon-16x16.png">
     <link rel="manifest" href="{{{url}}}/icons/site.webmanifest">
-    <link rel="mask-icon" href="{{{url}}}/icons/safari-pinned-tab.svg" color="#b51f08">
     <link rel="shortcut icon" href="{{{url}}}/icons/favicon.ico">
 
     <% _.forEach(htmlWebpackPlugin.files.css, function(cssFile) { %><style><%= compilation.assets[cssFile.substr(htmlWebpackPlugin.files.publicPath.length)].source() %></style><% }); %>
