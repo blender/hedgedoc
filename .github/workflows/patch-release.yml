@@ -20,6 +20,10 @@ on:
         options:
           - debian
           - alpine
+      container_ref:
+        description: 'Branch or tag of hedgedoc/container repo (defaults to release/<version>)'
+        required: false
+        default: ''
 
 jobs:
   patch-upstream:
@@ -79,8 +83,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           # Prepare workflow inputs
-          WORKFLOW_INPUTS='{"ref":"${{ inputs.tag }}${{ inputs.suffix }}", "base":"${{ inputs.base }}"}'
-
+          WORKFLOW_INPUTS='{"ref":"${{ inputs.tag }}${{ inputs.suffix }}", "base":"${{ inputs.base }}", "container_ref":"${{ inputs.container_ref }}"}'
           # Trigger the build workflow
           echo $WORKFLOW_INPUTS | gh workflow run build-and-publish.yml --ref "${{ github.ref_name }}" --repo "blender/hedgedoc" --json
 

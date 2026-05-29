@@ -15,6 +15,10 @@ on:
         options:
           - debian
           - alpine
+      container_ref:
+        description: 'Branch or tag of hedgedoc/container repo (defaults to release/<version>)'
+        required: false
+        default: ''
   push:
     tags:
       - '*'
@@ -43,7 +47,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: hedgedoc/container
-          ref: release/${{ steps.version.outputs.version }}
+          ref: ${{ inputs.container_ref != '' && inputs.container_ref || format('release/{0}', steps.version.outputs.version) }}
           fetch-depth: 1
 
       - name: Set up Docker Buildx
