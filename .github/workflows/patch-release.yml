@@ -7,7 +7,7 @@ on:
       tag:
         description: 'Specify an upstream version tag'
         required: true
-        default: '1.10.6'
+        default: '1.10.8'
       suffix:
         description: 'Optional image tag suffix'
         default: ''
@@ -30,7 +30,7 @@ jobs:
       actions: write
     steps:
       - name: Checkout current branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           token: ${{ secrets.PAT_TOKEN }}
 

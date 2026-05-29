@@ -40,7 +40,7 @@ jobs:
           echo "Building version: $VERSION"
 
       - name: Checkout HedgeDoc container repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: hedgedoc/container
           ref: release/${{ steps.version.outputs.version }}
