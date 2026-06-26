@@ -1,4 +1,4 @@
-From 96693701b6a125fb82419aeb050de034c2d1d1ae Mon Sep 17 00:00:00 2001
+From 8814bb3b113309c1032a333f4d281c2368fe5a7c Mon Sep 17 00:00:00 2001
 From: Bart van der Braak <bart@vanderbraak.nl>
 Date: Fri, 6 Feb 2026 17:21:23 +0100
 Subject: [PATCH 3/4] BLENDER: Change auth links and front page information
@@ -62,5 +62,5 @@ index b2cbeff71..b01c3b3ff 100644
                          <div class="col-md-4 inner">
                              <a href="<%- serverURL %>/features#Share-Notes">
 -- 
-2.49.0
+2.53.0
 

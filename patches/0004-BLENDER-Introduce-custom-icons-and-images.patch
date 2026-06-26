@@ -1,7 +1,7 @@
-From 6a7e2f2e64078797e16403b3909f2f8de7f9cbbc Mon Sep 17 00:00:00 2001
+From d144361e0401e611c77fc949240cae107f990059 Mon Sep 17 00:00:00 2001
 From: Bart van der Braak <bart@blender.org>
 Date: Fri, 29 May 2026 12:32:38 +0200
-Subject: [PATCH] BLENDER: Introduce custom icons and images
+Subject: [PATCH 4/4] BLENDER: Introduce custom icons and images
 
 As per discussion in https://projects.blender.org/infrastructure/meta/issues/205
 ---
@@ -25,12 +25,12 @@ As per discussion in https://projects.blender.org/infrastructure/meta/issues/205
  public/icons/web-app-manifest-192x192.png | Bin 0 -> 10821 bytes
  public/icons/web-app-manifest-512x512.png | Bin 0 -> 34998 bytes
  public/screenshot.png                     | Bin 249062 -> 147107 bytes
- public/views/hedgedoc/head.ejs            |   2 +-
+ public/views/hedgedoc/head.ejs            |   4 +--
  public/views/htmlexport.ejs               |   1 -
  public/views/includes/favicon.ejs         |  16 ++++------
  public/views/index/head.ejs               |   2 +-
- public/views/pretty.ejs                   |   2 +-
- 25 files changed, 30 insertions(+), 41 deletions(-)
+ public/views/pretty.ejs                   |   4 +--
+ 25 files changed, 32 insertions(+), 43 deletions(-)
  delete mode 100644 public/icons/android-chrome-192x192.png
  delete mode 100644 public/icons/android-chrome-512x512.png
  delete mode 100644 public/icons/browserconfig.xml
@@ -26772,14 +26772,16 @@ z>h2u89dzF6m-z4bmH!W&GZqWCvAk^wF9gW{R}d2YYcfKd^IMa-MEc-^Xui`OcJng<
 en8Rh!b&ZVT<38`iBKiRVz7!v-$rekSy!?N4Nm0iD
 
 diff --git a/public/views/hedgedoc/head.ejs b/public/views/hedgedoc/head.ejs
-index 27ecffb7b..cab02977a 100644
+index c6075f6e4..29531a1ee 100644
 --- a/public/views/hedgedoc/head.ejs
 +++ b/public/views/hedgedoc/head.ejs
-@@ -9,7 +9,7 @@
- <% if (opengraph.hasOwnProperty(og) && String(opengraph[og]).trim() !== '') { %>
+@@ -8,8 +8,8 @@
+ <% for (var og in opengraph) { %>
+ <% if (Object.keys(opengraph).includes(og) && typeof opengraph[og] === 'string' && opengraph[og].trim() !== '') { %>
  <meta property="og:<%= og %>" content="<%= String(opengraph[og]) %>">
- <% }} if (!opengraph.hasOwnProperty('image')) { %>
+-<% }} if (!Object.keys(opengraph).includes('image')) { %>
 -<meta property="og:image" content="<%- serverURL %>/icons/android-chrome-512x512.png">
++<% }} if (!opengraph.hasOwnProperty('image')) { %>
 +<meta property="og:image" content="<%- serverURL %>/icons/og.png">
  <meta property="og:image:alt" content="HedgeDoc logo">
  <meta property="og:image:type" content="image/png">
@@ -26832,14 +26834,16 @@ index fc8485ce4..44fcb06f7 100644
  <meta property="og:image:type" content="image/png">
  <base href="<%- serverURL %>/">
 diff --git a/public/views/pretty.ejs b/public/views/pretty.ejs
-index 97274ba15..df6efc92b 100644
+index dfbb89cec..97ca57ffe 100644
 --- a/public/views/pretty.ejs
 +++ b/public/views/pretty.ejs
-@@ -18,7 +18,7 @@
-     <% if (opengraph.hasOwnProperty(og) && opengraph[og].trim() !== '') { %>
+@@ -17,8 +17,8 @@
+     <% for (var og in opengraph) { %>
+     <% if (Object.keys(opengraph).includes(og) && typeof opengraph[og] === 'string' && opengraph[og].trim() !== '') { %>
      <meta property="og:<%= og %>" content="<%= opengraph[og] %>">
-     <% }} if (!opengraph.hasOwnProperty('image')) { %>
+-    <% }} if (!Object.keys(opengraph).includes('image')) { %>
 -    <meta property="og:image" content="<%- serverURL %>/icons/android-chrome-512x512.png">
++    <% }} if (!opengraph.hasOwnProperty('image')) { %>
 +    <meta property="og:image" content="<%- serverURL %>/icons/og.png">
      <meta property="og:image:alt" content="HedgeDoc logo">
      <meta property="og:image:type" content="image/png">
