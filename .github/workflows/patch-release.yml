@@ -21,9 +21,9 @@ on:
           - debian
           - alpine
       container_ref:
-        description: 'Branch or tag of hedgedoc/container repo (defaults to release/<version>)'
+        description: 'Branch or tag of hedgedoc/container repo (defaults to master)'
         required: false
-        default: ''
+        default: 'master'
 
 jobs:
   patch-upstream:
