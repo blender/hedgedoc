@@ -1,16 +1,30 @@
-From c7082ba14dc5570da125cd40231416217688ab00 Mon Sep 17 00:00:00 2001
+From 6f6534b5d54dfae787d607ca8c1e84cc1d4fff99 Mon Sep 17 00:00:00 2001
 From: Bart van der Braak <bart@vanderbraak.nl>
 Date: Fri, 6 Feb 2026 10:23:16 +0100
 Subject: [PATCH 1/4] BLENDER: Title changes for Blender
 
 ---
+ lib/models/note.js                | 2 +-
  public/js/extra.js                | 4 ++--
  public/views/hedgedoc/header.ejs  | 5 ++---
  public/views/includes/favicon.ejs | 4 ++--
  public/views/index/body.ejs       | 6 ++----
  public/views/index/head.ejs       | 8 ++++----
- 5 files changed, 12 insertions(+), 15 deletions(-)
+ 6 files changed, 13 insertions(+), 16 deletions(-)
 
+diff --git a/lib/models/note.js b/lib/models/note.js
+index 19c0694c7..136d13d20 100644
+--- a/lib/models/note.js
++++ b/lib/models/note.js
+@@ -361,7 +361,7 @@ module.exports = function (sequelize, DataTypes) {
+     return title || 'Untitled'
+   }
+   Note.generateWebTitle = function (title) {
+-    title = !title || title === 'Untitled' ? 'HedgeDoc - Collaborative markdown notes' : title + ' - HedgeDoc'
++    title = !title || title === 'Untitled' ? 'Blender Notes - Collaborative notes' : title + ' - Blender Notes'
+     return title
+   }
+   Note.extractNoteTags = function (meta, $) {
 diff --git a/public/js/extra.js b/public/js/extra.js
 index fc2405cd1..82297c3c6 100644
 --- a/public/js/extra.js
@@ -108,5 +122,5 @@ index dd2a4cfd0..fc8485ce4 100644
 +<title>Blender Notes - Collaborative notes</title>
  <%- include('../build/cover-pack-header') %>
 -- 
-2.49.0
+2.53.0
 
