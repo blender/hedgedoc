@@ -1,0 +1,125 @@
+From 8fdfe98e4c0ca68d34e77e1815cbb9ee691a2afc Mon Sep 17 00:00:00 2001
+From: Tobi <tldev-de@users.noreply.github.com>
+Date: Thu, 25 Jun 2026 17:16:27 +0200
+Subject: [PATCH] feat(external-links): add whitelist to bypass redirect page
+ (#6548)
+
+Signed-off-by: Tobias Dillig <tobias.dillig@frachtwerk.de>
+Signed-off-by: Tobi <tldev-de@users.noreply.github.com>
+---
+ docs/content/configuration.md     | 1 +
+ lib/config/default.js             | 3 ++-
+ lib/config/environment.js         | 3 ++-
+ lib/web/statusRouter.js           | 1 +
+ public/docs/release-notes.md      | 6 ++++++
+ public/js/extra.js                | 9 +++++++++
+ public/js/lib/common/constant.ejs | 2 ++
+ 7 files changed, 23 insertions(+), 2 deletions(-)
+
+diff --git a/docs/content/configuration.md b/docs/content/configuration.md
+index c858baea1..50c980579 100644
+--- a/docs/content/configuration.md
++++ b/docs/content/configuration.md
+@@ -44,6 +44,7 @@ to work.*
+ | `dbURL`              | `CMD_DB_URL`              | **`undefined`**, `postgres://username:password@localhost:5432/hedgedoc`, `mysql://username:password@localhost:3306/hedgedoc`, or `sqlite:///path/to/hedgedoc.db`                      | Set the db in URL style. If set, then the relevant `db` config entries will be overridden.                                                                                                                 |
+ | `loglevel`           | `CMD_LOGLEVEL`            | **`info`**, `debug` ...                                                                                                                             | Defines what kind of logs are provided to stdout. Available options: `debug`, `verbose`, `info`, `warn`, `error`                                                                                           |
+ | `forbiddenNoteIDs`   | `CMD_FORBIDDEN_NOTE_IDS`  | **`['robots.txt', 'favicon.ico', 'api', 'build', 'css', 'docs', 'fonts', 'js', 'uploads', 'vendor', 'views']`**, `['robots.txt']` or `'robots.txt'` | disallow creation of notes, even if `allowFreeUrl` or `CMD_ALLOW_FREEURL` is `true`                                                                                                                        |
++| `externalLinkWhitelist` | `CMD_EXTERNAL_LINK_WHITELIST` | **`[]`**, `example.com,trusted.org`                                                                                                                 | Comma-separated list of domains (and their subdomains) that bypass the external link warning page. Links to these domains open directly without the `/_link` redirect.                                     |
+ | `imageUploadType`    | `CMD_IMAGE_UPLOAD_TYPE`   | **`filesystem`**, `imgur`, `s3`, `minio`, `azure`, `lutim`                                                                                          | Where to upload images. For S3, see our Image Upload Guides for [S3](guides/media/s3-image-upload.md) or [Minio](guides/media/minio-image-upload.md), also there's a whole section on their respective env vars below. |
+ | `sourceURL`          | `CMD_SOURCE_URL`          | **no default**, `https://github.com/hedgedoc/hedgedoc/tree/<current commit>`                                                                        | Provides the link to the source code of HedgeDoc on the entry page (Please, make sure you change this when you run a modified version)                                                                     |
+ | `tooBusyLag`         | `CMD_TOOBUSY_LAG`         | **`70`**                                                                                                                                            | CPU time for one event loop tick until node throttles connections. (milliseconds)                                                                                                                          |
+diff --git a/lib/config/default.js b/lib/config/default.js
+index 3703c10a2..70ce4eabb 100644
+--- a/lib/config/default.js
++++ b/lib/config/default.js
+@@ -192,5 +192,6 @@ module.exports = {
+   //    2nd appearance: "31-good-morning-my-friend---do-you-have-5-1"
+   //    3rd appearance: "31-good-morning-my-friend---do-you-have-5-2"
+   linkifyHeaderStyle: 'keep-case',
+-  enableStatsApi: true
++  enableStatsApi: true,
++  externalLinkWhitelist: []
+ }
+diff --git a/lib/config/environment.js b/lib/config/environment.js
+index 891b30e3c..1222551ba 100644
+--- a/lib/config/environment.js
++++ b/lib/config/environment.js
+@@ -166,5 +166,6 @@ module.exports = {
+   allowGravatar: toBooleanConfig(process.env.CMD_ALLOW_GRAVATAR),
+   openID: toBooleanConfig(process.env.CMD_OPENID),
+   linkifyHeaderStyle: process.env.CMD_LINKIFY_HEADER_STYLE,
+-  enableStatsApi: toBooleanConfig(process.env.CMD_ENABLE_STATS_API)
++  enableStatsApi: toBooleanConfig(process.env.CMD_ENABLE_STATS_API),
++  externalLinkWhitelist: toArrayConfig(process.env.CMD_EXTERNAL_LINK_WHITELIST)
+ }
+diff --git a/lib/web/statusRouter.js b/lib/web/statusRouter.js
+index 503cadda5..f55784214 100644
+--- a/lib/web/statusRouter.js
++++ b/lib/web/statusRouter.js
+@@ -113,6 +113,7 @@ statusRouter.get('/config', function (req, res) {
+     linkifyHeaderStyle: config.linkifyHeaderStyle,
+     cookiePolicy: config.cookiePolicy,
+     enableUploads: config.enableUploads,
++    externalLinkWhitelist: config.externalLinkWhitelist,
+     userToken: req.user ? req.user.deleteToken : ''
+   }
+   res.set({
+diff --git a/public/docs/release-notes.md b/public/docs/release-notes.md
+index e688fd4d9..6daa3ad94 100644
+--- a/public/docs/release-notes.md
++++ b/public/docs/release-notes.md
+@@ -1,5 +1,11 @@
+ # Release Notes
+ 
++## <i class="fa fa-tag"></i> 1.x.x <i class="fa fa-calendar-o"></i> UNRELEASED
++
++### Enhancements
++
++- Added external link whitelist setting (`externalLinkWhitelist` in config.json or `CMD_EXTERNAL_LINK_WHITELIST`) to skip warning page for certain domains
++
+ ## <i class="fa fa-tag"></i> 1.11.0 <i class="fa fa-calendar-o"></i> 2026-06-18
+ 
+ ### Security fixes
+diff --git a/public/js/extra.js b/public/js/extra.js
+index b49c8b4ff..14ee94494 100644
+--- a/public/js/extra.js
++++ b/public/js/extra.js
+@@ -592,6 +592,7 @@ window.postProcess = postProcess
+ 
+ // rewrite external links to go through the /_link warning page
+ export function rewriteExternalLinks (view) {
++  const whitelist = window.externalLinkWhitelist || []
+   view.find('a[href]').each((index, linkTag) => {
+     const anchor = $(linkTag)
+     const href = anchor.attr('href')
+@@ -608,6 +609,14 @@ export function rewriteExternalLinks (view) {
+     if (!['http:', 'https:'].includes(parsed.protocol) || parsed.origin === window.location.origin) {
+       return
+     }
++    // skip rewriting for whitelisted domains (exact match or subdomain, case-insensitive)
++    const hostname = parsed.hostname.toLowerCase()
++    if (whitelist.some(domain => {
++      const lowercaseDomain = domain.toLowerCase()
++      return hostname === lowercaseDomain || hostname.endsWith('.' + lowercaseDomain)
++    })) {
++      return
++    }
+     const noteURL = window.location.pathname.split('/').pop()
+     anchor.attr('href', `${window.location.origin}/_link?url=${encodeURIComponent(parsed.href)}&note=${noteURL}`)
+   })
+diff --git a/public/js/lib/common/constant.ejs b/public/js/lib/common/constant.ejs
+index 751e84b6f..8e25e95ae 100644
+--- a/public/js/lib/common/constant.ejs
++++ b/public/js/lib/common/constant.ejs
+@@ -8,6 +8,8 @@ window.allowedUploadMimeTypes = <%- JSON.stringify(allowedUploadMimeTypes) %>
+ 
+ window.linkifyHeaderStyle = '<%- linkifyHeaderStyle %>'
+ 
++window.externalLinkWhitelist = <%- JSON.stringify(externalLinkWhitelist) %>
++
+ window.DROPBOX_APP_KEY = '<%- DROPBOX_APP_KEY %>'
+ 
+ window.cookiePolicy = '<%- cookiePolicy %>'
+-- 
+2.54.0
+
