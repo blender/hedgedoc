@@ -5,25 +5,25 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Specify an upstream version tag'
+        description: "Specify an upstream version tag"
         required: true
-        default: '1.11.0'
+        default: "1.12.0"
       suffix:
-        description: 'Optional image tag suffix'
-        default: ''
+        description: "Optional image tag suffix"
+        default: ""
         required: false
       base:
-        description: 'Base image (debian or alpine)'
+        description: "Base image (debian or alpine)"
         required: false
-        default: 'debian'
+        default: "debian"
         type: choice
         options:
           - debian
           - alpine
       container_ref:
-        description: 'Branch or tag of hedgedoc/container repo (defaults to master)'
+        description: "Branch or tag of hedgedoc/container repo (defaults to master)"
         required: false
-        default: 'master'
+        default: "master"
 
 jobs:
   patch-upstream:
