@@ -5,23 +5,23 @@ on:
   workflow_dispatch:
     inputs:
       ref:
-        description: 'Ref to build'
+        description: "Ref to build"
         required: true
       base:
-        description: 'Base image (debian or alpine)'
+        description: "Base image (debian or alpine)"
         required: false
-        default: 'debian'
+        default: "debian"
         type: choice
         options:
           - debian
           - alpine
       container_ref:
-        description: 'Branch or tag of hedgedoc/container repo (defaults to master)'
+        description: "Branch or tag of hedgedoc/container repo (defaults to master)"
         required: false
-        default: 'master'
+        default: "patch-1"
   push:
     tags:
-      - '*'
+      - "*"
 
 env:
   REGISTRY_IMAGE: ghcr.io/${{ github.repository }}
@@ -46,7 +46,7 @@ jobs:
       - name: Checkout HedgeDoc container repository
         uses: actions/checkout@v6
         with:
-          repository: hedgedoc/container
+          repository: bartvdbraak/container
           ref: ${{ inputs.container_ref != '' && inputs.container_ref || format('release/{0}', steps.version.outputs.version) }}
           fetch-depth: 1
 
@@ -77,14 +77,14 @@ jobs:
         run: |
           BASE="${{ github.event.inputs.base || 'debian' }}"
           TAGS="${{ steps.meta.outputs.tags }}"
-          
+
           # If debian, add version and latest tags without base suffix
           if [ "$BASE" = "debian" ]; then
             TAGS="$TAGS
             ${{ env.REGISTRY_IMAGE }}:${{ steps.version.outputs.version }}
             ${{ env.REGISTRY_IMAGE }}:latest"
           fi
-          
+
           # Use multi-line output format
           echo "tags<<EOF" >> $GITHUB_OUTPUT
           echo "$TAGS" >> $GITHUB_OUTPUT

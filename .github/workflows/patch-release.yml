@@ -23,7 +23,7 @@ on:
       container_ref:
         description: "Branch or tag of hedgedoc/container repo (defaults to master)"
         required: false
-        default: "master"
+        default: "patch-1"
 
 jobs:
   patch-upstream:
