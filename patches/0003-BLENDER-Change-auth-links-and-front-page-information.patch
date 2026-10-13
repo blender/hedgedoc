@@ -1,14 +1,14 @@
-From 41a08b7f4bad4b9f282a529bc06c2ce6446e671a Mon Sep 17 00:00:00 2001
+From b99b57a9241389ea1f8796fd26479d065d537f45 Mon Sep 17 00:00:00 2001
 From: Bart van der Braak <bart@vanderbraak.nl>
 Date: Fri, 6 Feb 2026 17:21:23 +0100
-Subject: [PATCH 1/2] BLENDER: Change auth links and front page information
+Subject: [PATCH] BLENDER: Change auth links and front page information
 
 ---
  public/views/index/body.ejs | 21 ++++++++++++++-------
  1 file changed, 14 insertions(+), 7 deletions(-)
 
 diff --git a/public/views/index/body.ejs b/public/views/index/body.ejs
-index c19372b18..b32b2830c 100644
+index c19372b18..503cbeb7d 100644
 --- a/public/views/index/body.ejs
 +++ b/public/views/index/body.ejs
 @@ -16,9 +16,9 @@
@@ -16,10 +16,10 @@ index c19372b18..b32b2830c 100644
                                  <% } %>
                                  <% if (authProviders.autoLoginProvider) { %>
 -                                <a type="button" href="<%- serverURL %>/auth/<%- authProviders.autoLoginProvider %>" class="btn btn-sm btn-success ui-signin"><%= __('Sign In') %></a>
-+                                <a type="button" href="<%- serverURL %>/auth/<%- authProviders.autoLoginProvider %>" class="btn btn-sm btn-success ui-signin"><%= __('Sign in via %s', authProviders.oauth2ProviderName || 'OAuth2')</a>
++                                <a type="button" href="<%- serverURL %>/auth/<%- authProviders.autoLoginProvider %>" class="btn btn-sm btn-success ui-signin"><%= __('Sign in via %s', authProviders.oauth2ProviderName || 'OAuth2') %></a>
                                  <% } else if (authProviders.facebook || authProviders.twitter || authProviders.github || authProviders.gitlab || authProviders.mattermost || authProviders.dropbox || authProviders.google || authProviders.ldap || authProviders.saml || authProviders.oauth2 || authProviders.email) { %>
 -                                <button class="btn btn-sm btn-success ui-signin" data-toggle="modal" data-target=".signin-modal"><%= __('Sign In') %></button>
-+                                <button class="btn btn-sm btn-success ui-signin" data-toggle="modal" data-target=".signin-modal"><%= __('Sign in via %s', authProviders.oauth2ProviderName || 'OAuth2')</button>
++                                <button class="btn btn-sm btn-success ui-signin" data-toggle="modal" data-target=".signin-modal"><%= __('Sign in via %s', authProviders.oauth2ProviderName || 'OAuth2') %></button>
                                  <% } %>
                              </div>
                              <div class="ui-signout" style="float: right; margin-top: 8px;<% if(!signin) { %> display: none;<% } %>">
